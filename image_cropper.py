@@ -1,7 +1,7 @@
 import os
 import json
 import cv2
-import multiprocessing
+import multiprocessing # 병렬 처리를 위한 라이브러리고 원도우에서도 될 텐데 코드 안되면 마지막 확인해주시면 됩니다.
 from tqdm import tqdm
 
 base_folder = "/Users/Desktop/Unzipped_DOG/" # 압축 풀린 폴더 경로
@@ -115,6 +115,7 @@ def process_pose_folder(pose_folder):
 
     print(f"✅ Done with {pose_folder}.")
 
+#윈도우에서 만약에 실행 안 되면 이부분만 바꾸시면 될거에요
 if __name__ == "__main__":
     num_workers = min(len(pose_folders), multiprocessing.cpu_count())
     with multiprocessing.Pool(processes=num_workers) as pool:
