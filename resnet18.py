@@ -74,8 +74,10 @@ def train_model():
     # 6. 훈련 루프
     # ------------------------
     scaler = torch.amp.GradScaler() 
-    #혼합 정밀도 학습이라고 하고 FP16(반정밀도)와 FP32(단정밀도)를 조합하여 계산을 수행하는 기법이라고 하는데 정확히 무슨 의미인지는 잘 모르겠습니다.
-    #그냥 빠르게 학습하기 위한 방법 정도로 이해했습니다..
+    #혼합 정밀도 학습이라고 하고 FP16(반정밀도)와 FP32(단정밀도)를 조합하여 계산을 수행하는 기법이라고 하는데 제가 이해한 바로는 .
+    '''순전파와 역전파는 FP16으로 계산되는데 그 이유는 속도가 빠르고 단순 행렬 곱셈, 합성곱 등이기에 높은 정밀도가 필요 없어 충분하다고 합니다. 
+    그런데 손실함수는 매우 높은 정밀도가 있어야 해서 FP32로 수행 한 손실함수입니다. 
+    이렇게 혼합으로 연산을 하기에 속도와 메모리 효율성 높이고 중요한 손실함수 연산은 정확도를 높게 유지할 수 있는거 같습니다.'''
 
     for epoch in range(num_epochs):
         model.train() 
@@ -93,10 +95,11 @@ def train_model():
             images, labels = images.to(device), labels.to(device)
             #이미지와 레이블을 디바이스(GPU)에 올리기
 
-            optimizer.zero_grad()
-            with torch.autocast(device_type="mps"):  # Mixed Precision for Speed
+            optimizer.zero_grad() # 파이토치 사용하면 기본적으로 각 배치에서 찾은 기울기가 누적되기 때문에 zero_grad()로 초기화해야 한다고 합니다.
+            with torch.autocast(device_type="mps"):  
                 outputs = model(images)
                 loss = criterion(outputs, labels)
+            ''' 모델에 이미지를 넣어 예측값을 구하고(FP16), 손실함수를 통해 손실값을 구한다(FP32). '''
 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
