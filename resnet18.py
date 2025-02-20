@@ -24,15 +24,9 @@ def train_model():
     # Step 2: Data Transforms
     # ------------------------
     train_transforms = transforms.Compose([
-<<<<<<< HEAD
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]) #레스넷 학습을 위해서 원래 학습된 이미지넷과 맞게 정규화가 필수라고 합니다.. 어떻게 정규화 하는지는 잘 모르겠습니다
-=======
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
->>>>>>> ec9de05aef06569ce0092f33f890ca22ec29250a
+        ])#레스넷 학습을 위해서 원래 학습된 이미지넷과 맞게 정규화가 필수라고 합니다.. 어떻게 정규화 하는지는 잘 모르겠습니다
 
 
     val_transforms = transforms.Compose([
