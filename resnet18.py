@@ -9,7 +9,7 @@ import os
 
 def train_model():
     # ------------------------
-    # 경로 및 매개변수 설정
+    # 1. 경로 및 매개변수 설정
     # ------------------------
     train_dir = "/Users/Desktop/AI/Balanced_Resized_Cropped_DOG/"  # 5000개 씩 샘플링한 데이터셋
     val_dir = "/Users/Desktop/AI/Resized_Cropped_DOG_Validation/"  # 5000개 씩 샘플링 하지 않은 데이터셋
@@ -21,7 +21,7 @@ def train_model():
     print("Using device:", device)
 
     # ------------------------
-    # Step 2: Data Transforms
+    # 2. 데이터 변환
     # ------------------------
     train_transforms = transforms.Compose([
         transforms.ToTensor(),
