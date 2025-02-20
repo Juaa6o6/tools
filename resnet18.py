@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import models
 import os
 
+# 4. ResNet18 모델 정의 부분에 레즈넷50으로 바꿀 수 있습니다(line 56).
+
 def train_and_test():
     # ------------------------
     # 1. 경로 및 매개변수 설정
@@ -51,10 +53,11 @@ def train_and_test():
     # ------------------------
     # 4. ResNet18 모델 정의
     # ------------------------
-    model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+    model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)  #model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)  # ResNet50 변경시
     num_features = model.fc.in_features
     model.fc = nn.Linear(num_features, num_classes)
     model.to(device)
+
 
     # ------------------------
     # 5. 손실 및 옵티마이저
