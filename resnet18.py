@@ -74,7 +74,7 @@ def train_model():
     # 6. 훈련 루프
     # ------------------------
     scaler = torch.amp.GradScaler() 
-    #혼합 정밀도 학습이라고 하고 FP16(반정밀도)와 FP32(단정밀도)를 조합하여 계산을 수행하는 기법이라고 하는데 제가 이해한 바로는 .
+    #혼합 정밀도 학습이라고 하고 FP16(반정밀도로 16비트 사용한 데이터 형식)와 FP32(단정밀도로 32비트 사용한 데이터 형식)를 조합하여 계산을 수행하는 기법이라고 하는데 제가 이해한 바로는 .
     '''순전파와 역전파는 FP16으로 계산되는데 그 이유는 속도가 빠르고 단순 행렬 곱셈, 합성곱 등이기에 높은 정밀도가 필요 없어 충분하다고 합니다. 
     그런데 손실함수는 매우 높은 정밀도가 있어야 해서 FP32로 수행 한 손실함수입니다. 
     이렇게 혼합으로 연산을 하기에 속도와 메모리 효율성 높이고 중요한 손실함수 연산은 정확도를 높게 유지할 수 있는거 같습니다.'''
@@ -99,22 +99,23 @@ def train_model():
             with torch.autocast(device_type="mps"):  
                 outputs = model(images)
                 loss = criterion(outputs, labels)
-            ''' 모델에 이미지를 넣어 예측값을 구하고(FP16), 손실함수를 통해 손실값을 구한다(FP32). '''
+            ''' torch.autocast 클래스가 혼합정밀도 활성화합니다. 이미지를 넣어 예측값을 구하고(FP16), 손실함수를 통해 손실값을 구한다(FP32). '''
 
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
+            scaler.scale(loss).backward() #손실 값을 스케일링 해서 역전파 하는데 스케일링 하는 이유는 FP16 타입은 표현 숫자 범위가 좁아 기울기가 0으로 사라지는 underflow라는 문제 발생 할 수 있기 때문. 
+            scaler.step(optimizer) #옵티마이저가 가중치를 업데이트하기 전에 기울기를 다시 원래 크기로 unscale합니다.
+            scaler.update() #학습 상태에 따라 스케일 팩터를 동적으로 조정합니다.
+            #위 3개 함수는 혼합 정밀도 학습을 사용하면 반드시 필요하다고 합니다.
 
-            running_loss += loss.item() * images.size(0)
-            _, predicted = outputs.max(1)
-            correct += predicted.eq(labels).sum().item()
-            total += labels.size(0)
+            running_loss += loss.item() * images.size(0) #한 에포크 동안 모든 배치에서 발생한 손실을 합산하려고 이렇게 계산하는 것입니다.
+            _, predicted = outputs.max(1) #각 샘플에서 가장 높은 확률을 가진 클래스의 인덱스를 가져옴
+            correct += predicted.eq(labels).sum().item() #예측값과 실제 정답을 비교하여 맞춘 것만 True(1), 틀린 것 False(0) 그리고 맞춘 개수 더하고 .item() 사용해서 숫자로 변환. 그러면 한 에포크 동안의 총 정답 맞춘 개수를 누적하여 저장.
+            total += labels.size(0) # 한 epoch 동안 총 이미지 개수 누적
 
-        train_loss = running_loss / total
-        train_acc = 100.0 * correct / total
+        train_loss = running_loss / total # 평균 손실
+        train_acc = 100.0 * correct / total # 정확도 계산
 
         # ------------------------
-        # Step 7: Validation
+        # 7. 검증
         # ------------------------
         model.eval()
         val_loss, val_correct, val_total = 0.0, 0, 0
@@ -139,13 +140,13 @@ def train_model():
               f"Val Loss: {val_loss:.4f}, Acc: {val_acc:.2f}%")
 
     # ------------------------
-    # Step 8: Save Model
+    #8. 모델 저장
     # ------------------------
     torch.save(model.state_dict(), "balanced_resnet18_mps.pth")
     print("Training Complete!")
 
 # ------------------------
-# Step 9: Fix Multiprocessing Issue
+#9. 멀티프로세싱 문제 해결
 # ------------------------
-if __name__ == "__main__":  # ✅ FIXED: Proper multiprocessing safeguard
+if __name__ == "__main__":  
     train_model()
