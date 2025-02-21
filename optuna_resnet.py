@@ -9,10 +9,11 @@ import os
 import optuna  # Optuna 라이브러리
 import numpy as np
 
+
 # ------------------------
 # 1. 데이터셋 설정
 # ------------------------
-dataset_dir = "/Users/vairocana/Desktop/AI/Dog_Train"  # 폴더 안에 클래스별 이미지 존재
+dataset_dir = "/Users/Desktop/AI/Dog_Train"  # 폴더 안에 클래스별 이미지 존재
 device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 print("✅ Using device:", device)
 
